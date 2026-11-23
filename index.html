@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1c1b3a">
+<title>매일 운동 체크</title>
+<link href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#1c1b3a; --bg:#f2f4fb; --card:#fff; --line:#e3e6f2; --mute:#7a7f9c;
+  --run:#ff5a4e; --push:#2f6bff; --stretch:#12b886; --hang:#ffa81f; --lime:#c8f542;
+  box-sizing:border-box;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:"Noto Sans KR",system-ui,sans-serif;font-size:15px;
+  padding-bottom:calc(32px + env(safe-area-inset-bottom,0px))}
+.disp{font-family:"Do Hyeon","Noto Sans KR",sans-serif;font-weight:400;letter-spacing:.01em}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;touch-action:manipulation}
+.wrap{max-width:480px;margin:0 auto}
+
+/* header */
+header{background:linear-gradient(160deg,#2a2870 0%,#1c1b3a 70%);color:#fff;
+  padding:calc(18px + env(safe-area-inset-top,0px)) 18px 22px;border-radius:0 0 28px 28px}
+.nav{display:flex;align-items:center;justify-content:space-between}
+.nav h1{margin:0;font-size:26px}
+.nav button{width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.12);font-size:20px;color:#fff}
+.nav button:active{background:rgba(255,255,255,.25)}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
+.tile{background:rgba(255,255,255,.1);border-radius:16px;padding:10px 12px}
+.tile b{display:block;font-family:"Do Hyeon",sans-serif;font-weight:400;font-size:26px;color:var(--lime);line-height:1.1}
+.tile span{font-size:12px;opacity:.8}
+
+/* date strip */
+.strip{display:flex;gap:8px;overflow-x:auto;padding:16px 18px 6px;scrollbar-width:none;scroll-snap-type:x proximity}
+.strip::-webkit-scrollbar{display:none}
+.day{flex:0 0 auto;width:48px;padding:8px 0 10px;border-radius:16px;background:var(--card);text-align:center;
+  border:2px solid transparent;scroll-snap-align:center;position:relative}
+.day small{display:block;font-size:11px;color:var(--mute)}
+.day b{font-family:"Do Hyeon",sans-serif;font-weight:400;font-size:20px}
+.day.has::after{content:"";position:absolute;left:50%;bottom:4px;width:5px;height:5px;margin-left:-2.5px;border-radius:50%;background:var(--stretch)}
+.day.today{border-color:var(--line)}
+.day.sel{background:var(--ink);color:#fff}
+.day.sel small{color:#c9cbe6}
+.day.sel.has::after{background:var(--lime)}
+
+section{padding:0 18px}
+h2{font-size:19px;margin:20px 0 10px;display:flex;align-items:center;gap:8px}
+.badge{font-family:"Noto Sans KR",sans-serif;font-size:12px;background:var(--lime);color:var(--ink);padding:2px 9px;border-radius:99px;font-weight:700}
+
+/* toggles */
+.toggles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tog{background:var(--card);border-radius:20px;padding:16px 14px;text-align:left;min-height:104px;
+  display:flex;flex-direction:column;justify-content:space-between;border:2px solid var(--line);transition:background .15s,border-color .15s,transform .1s}
+.tog:active{transform:scale(.97)}
+.tog .ic{font-size:26px}
+.tog .tx{font-weight:700;font-size:16px}
+.tog .st{font-size:12px;color:var(--mute)}
+.tog.on{color:#fff;border-color:transparent}
+.tog.on .st{color:rgba(255,255,255,.85)}
+.tog.stretch.on{background:var(--stretch)}
+.tog.hang.on{background:var(--hang)}
+.tog .ck{align-self:flex-end;width:28px;height:28px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;font-size:15px;margin-top:-30px}
+.tog.on .ck{background:#fff;border-color:#fff;color:var(--ink)}
+
+/* steppers */
+.stp{background:var(--card);border-radius:20px;padding:14px;margin-top:10px;display:flex;align-items:center;gap:10px;border:2px solid var(--line)}
+.stp .lb{flex:1;min-width:0}
+.stp .lb b{display:block;font-size:16px}
+.stp .lb span{font-size:12px;color:var(--mute)}
+.stp button{width:46px;height:46px;border-radius:14px;font-size:24px;font-weight:700;color:#fff}
+.stp.run button{background:var(--run)}
+.stp.push button{background:var(--push)}
+.stp button:active{filter:brightness(.88)}
+.stp input{width:68px;height:46px;border:2px solid var(--line);border-radius:14px;text-align:center;
+  font-family:"Do Hyeon",sans-serif;font-size:24px;color:var(--ink);background:#fff;-moz-appearance:textfield}
+.stp input::-webkit-outer-spin-button,.stp input::-webkit-inner-spin-button{-webkit-appearance:none}
+.stp input:focus-visible,button:focus-visible{outline:3px solid var(--push);outline-offset:2px}
+.unit{font-size:13px;color:var(--mute);width:22px}
+
+/* charts */
+.card{background:var(--card);border-radius:22px;padding:16px;margin-top:10px}
+.card .hd{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}
+.card .hd b{font-size:16px}
+.card .hd span{font-size:13px;color:var(--mute)}
+.chart{width:100%;height:auto;display:block;touch-action:manipulation}
+.chart text{font-size:9px;fill:var(--mute);font-family:"Noto Sans KR",sans-serif}
+.bar{margin-top:12px}
+.bar .row{display:flex;justify-content:space-between;font-size:14px;margin-bottom:6px}
+.bar .row b{font-weight:700}
+.track{height:14px;border-radius:99px;background:var(--line);overflow:hidden}
+.fill{height:100%;border-radius:99px;transition:width .35s}
+.note{text-align:center;font-size:12px;color:var(--mute);margin:22px 18px 0}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+
+<script>
+const KEY = 'workout-log-v1';
+let store = {};
+try { store = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch (e) { store = {}; }
+function save() { try { localStorage.setItem(KEY, JSON.stringify(store)); } catch (e) {} }
+
+const pad = n => String(n).padStart(2, '0');
+const ymd = (y, m, d) => y + '-' + pad(m + 1) + '-' + pad(d);
+const dim = (y, m) => new Date(y, m + 1, 0).getDate();
+const r1 = x => Math.round(x * 10) / 10;
+const WD = ['일', '월', '화', '수', '목', '금', '토'];
+const now = new Date();
+const todayStr = ymd(now.getFullYear(), now.getMonth(), now.getDate());
+let view = { y: now.getFullYear(), m: now.getMonth() };
+let sel = todayStr;
+
+const get = k => store[k] || { s: false, r: 0, p: 0, h: false };
+function set(k, patch) {
+  const v = Object.assign({}, get(k), patch);
+  if (!v.s && !v.h && !v.r && !v.p) delete store[k]; else store[k] = v;
+  save(); render();
+}
+const toggle = f => set(sel, { [f]: !get(sel)[f] });
+const stepRun = d => set(sel, { r: Math.max(0, r1(get(sel).r + d)) });
+const stepPush = d => set(sel, { p: Math.max(0, get(sel).p + d) });
+const setRun = v => set(sel, { r: Math.max(0, r1(parseFloat(v) || 0)) });
+const setPush = v => set(sel, { p: Math.max(0, Math.round(parseFloat(v) || 0)) });
+const pick = k => { sel = k; render(); };
+function go(dm) {
+  let m = view.m + dm, y = view.y;
+  if (m < 0) { m = 11; y--; } if (m > 11) { m = 0; y++; }
+  view = { y, m };
+  sel = (now.getFullYear() === y && now.getMonth() === m) ? todayStr : ymd(y, m, 1);
+  render(true);
+}
+
+function chart(arr, color, min) {
+  const n = arr.length, W = 340, H = 100, top = 12, mx = Math.max(min, ...arr), bw = W / n;
+  let s = '<svg class="chart" viewBox="0 0 ' + W + ' ' + (H + 16) + '">';
+  s += '<text x="0" y="8">' + r1(mx) + '</text>';
+  for (let i = 0; i < n; i++) {
+    const d = i + 1, k = ymd(view.y, view.m, d), h = arr[i] / mx * (H - top);
+    if (arr[i]) s += '<rect x="' + (i * bw + 1.5) + '" y="' + (H - h) + '" width="' + (bw - 3) + '" height="' + Math.max(h, 2) + '" rx="3" fill="' + color + '" opacity="' + (k === sel ? 1 : .5) + '"/>';
+    else s += '<rect x="' + (i * bw + 1.5) + '" y="' + (H - 3) + '" width="' + (bw - 3) + '" height="3" rx="1.5" fill="#e3e6f2"/>';
+    if (k === sel) s += '<rect x="' + (i * bw) + '" y="' + (H + 3) + '" width="' + bw + '" height="2" fill="' + color + '"/>';
+    if (d === 1 || d % 5 === 0) s += '<text x="' + (i * bw + bw / 2) + '" y="' + (H + 14) + '" text-anchor="middle">' + d + '</text>';
+    s += '<rect x="' + (i * bw) + '" y="0" width="' + bw + '" height="' + (H + 16) + '" fill="transparent" onclick="pick(\'' + k + '\')"/>';
+  }
+  return s + '</svg>';
+}
+
+function render(recenter) {
+  const app = document.getElementById('app');
+  const oldStrip = document.getElementById('strip');
+  const keep = oldStrip ? oldStrip.scrollLeft : 0;
+  const { y, m } = view, n = dim(y, m);
+  let sd = 0, hd = 0, km = 0, pu = 0, act = 0; const R = [], P = [];
+  for (let d = 1; d <= n; d++) {
+    const v = get(ymd(y, m, d));
+    R.push(v.r); P.push(v.p); km += v.r; pu += v.p;
+    if (v.s) sd++; if (v.h) hd++;
+    if (v.s || v.h || v.r || v.p) act++;
+  }
+  const cur = get(sel), sd8 = sel.split('-'), selDate = new Date(+sd8[0], +sd8[1] - 1, +sd8[2]);
+  let strip = '';
+  for (let d = 1; d <= n; d++) {
+    const k = ymd(y, m, d), v = get(k), has = v.s || v.h || v.r || v.p;
+    strip += '<button class="day' + (k === sel ? ' sel' : '') + (k === todayStr ? ' today' : '') + (has ? ' has' : '') +
+      '" onclick="pick(\'' + k + '\')"><small>' + WD[new Date(y, m, d).getDay()] + '</small><b>' + d + '</b></button>';
+  }
+  app.innerHTML =
+    '<header><div class="nav"><button onclick="go(-1)" aria-label="이전 달">‹</button>' +
+    '<h1 class="disp">' + y + '년 ' + (m + 1) + '월</h1>' +
+    '<button onclick="go(1)" aria-label="다음 달">›</button></div>' +
+    '<div class="tiles"><div class="tile"><b>' + act + '일</b><span>운동한 날</span></div>' +
+    '<div class="tile"><b>' + r1(km) + 'km</b><span>달리기 합계</span></div>' +
+    '<div class="tile"><b>' + pu + '개</b><span>푸시업 합계</span></div></div></header>' +
+    '<div class="strip" id="strip">' + strip + '</div>' +
+    '<section><h2 class="disp">' + (selDate.getMonth() + 1) + '월 ' + selDate.getDate() + '일 ' + WD[selDate.getDay()] + '요일' +
+    (sel === todayStr ? '<span class="badge">오늘</span>' : '') + '</h2>' +
+    '<div class="toggles">' +
+    '<button class="tog stretch' + (cur.s ? ' on' : '') + '" onclick="toggle(\'s\')"><span class="ic">🧘</span><span><span class="tx">스트레칭</span><br><span class="st">' + (cur.s ? '완료' : '아직이에요') + '</span></span><span class="ck">' + (cur.s ? '✓' : '') + '</span></button>' +
+    '<button class="tog hang' + (cur.h ? ' on' : '') + '" onclick="toggle(\'h\')"><span class="ic">💪</span><span><span class="tx">매달리기</span><br><span class="st">' + (cur.h ? '완료' : '아직이에요') + '</span></span><span class="ck">' + (cur.h ? '✓' : '') + '</span></button></div>' +
+    '<div class="stp run"><div class="lb"><b>🏃 달리기</b><span>거리를 기록해요</span></div>' +
+    '<button onclick="stepRun(-1)" aria-label="1km 줄이기">−</button>' +
+    '<input type="number" inputmode="decimal" step="0.1" min="0" value="' + (cur.r || '') + '" placeholder="0" onchange="setRun(this.value)" aria-label="달리기 km">' +
+    '<span class="unit">km</span><button onclick="stepRun(1)" aria-label="1km 늘리기">+</button></div>' +
+    '<div class="stp push"><div class="lb"><b>🔥 푸시업</b><span>개수를 기록해요</span></div>' +
+    '<button onclick="stepPush(-10)" aria-label="10개 줄이기">−</button>' +
+    '<input type="number" inputmode="numeric" step="1" min="0" value="' + (cur.p || '') + '" placeholder="0" onchange="setPush(this.value)" aria-label="푸시업 개수">' +
+    '<span class="unit">개</span><button onclick="stepPush(10)" aria-label="10개 늘리기">+</button></div></section>' +
+    '<section><h2 class="disp">이번 달 기록</h2>' +
+    '<div class="card"><div class="hd"><b>달리기 (km)</b><span>합계 ' + r1(km) + 'km</span></div>' + chart(R, 'var(--run)', 5) + '</div>' +
+    '<div class="card"><div class="hd"><b>푸시업 (개)</b><span>합계 ' + pu + '개</span></div>' + chart(P, 'var(--push)', 20) + '</div>' +
+    '<div class="card"><div class="hd"><b>한 날 수</b><span>총 ' + n + '일 중</span></div>' +
+    '<div class="bar" style="margin-top:4px"><div class="row"><span>🧘 스트레칭</span><b>' + sd + '일</b></div><div class="track"><div class="fill" style="width:' + sd / n * 100 + '%;background:var(--stretch)"></div></div></div>' +
+    '<div class="bar"><div class="row"><span>💪 매달리기</span><b>' + hd + '일</b></div><div class="track"><div class="fill" style="width:' + hd / n * 100 + '%;background:var(--hang)"></div></div></div></div></section>' +
+    '<p class="note">기록은 이 기기의 브라우저에 저장돼요</p>';
+  const st = document.getElementById('strip');
+  const el = st.querySelector('.sel');
+  st.scrollLeft = (recenter || !oldStrip) && el ? el.offsetLeft - st.clientWidth / 2 + el.clientWidth / 2 : keep;
+}
+render();
+</script>
+</body>
+</html>
